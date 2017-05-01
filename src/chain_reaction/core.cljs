@@ -6,11 +6,22 @@
 (defn new-board [m n]
     (vec (repeat m (vec (repeat n "B")))))
 
-(println "This text is printed from src/chain-reaction/core.cljs. Go ahead and edit it and see reloading in action.")
+
 
 ;; define your app data so that it doesn't get over-written on reload
 
-(defonce app-state (atom {:text "Hello world!!!"}))
+(defonce app-state (atom {:text "Welcome to Chain Reaction Game"
+                          :board (new-board 9 9)
+                          :game-status :in-progress}))
+
+(defn rectangle
+    [i j]
+    [:rect 
+        {:width 0.28
+        :height 0.28
+        :fill "grey"
+        :x (+ 0.05 (* 0.3 i))
+        :y (+ 0.05 (* 0.3 j))}])
 
 (defn hello-world []
   [:h1 (:text @app-state)])
