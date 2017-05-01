@@ -4,9 +4,9 @@
 (enable-console-print!)
 
 (defn new-board [m n]
-    (vec (repeat m (vec (repeat n "B")))))
+    (vec (repeat m (vec (repeat n {:player "B" :number 0})))))
 
-
+(def player-color {"X" "Red" "Y" "Green"})
 
 ;; define your app data so that it doesn't get over-written on reload
 
@@ -14,8 +14,7 @@
                           :board (new-board 8 10)
                           :game-status :in-progress}))
 
-(defn rectangle
-    [i j]
+(defn rectangle [i j]
     [:rect 
         {:width 0.88
         :height 0.88
@@ -35,7 +34,7 @@
    :height 500} 
    (for [i (range (count (:board @app-state)))
          j (range (count (first (:board @app-state))))]
-      (case (get-in @app-state [:board i j])
+      (case (get-in @app-state [:board i j :player])
         "B" [rectangle j i]))]])
 
 (reagent/render-component [chain-reaction]
