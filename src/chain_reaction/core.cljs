@@ -7,12 +7,18 @@
     (vec (repeat m (vec (repeat n {:player "B" :number 0})))))
 
 (def player-color {"X" "Red" "Y" "Green" "B" "Grey"})
+(def player-to-move (atom "X"))
 
 ;; define your app data so that it doesn't get over-written on reload
 
 (def app-state (atom {:text "Welcome to Chain Reaction Game"
-                          :board (new-board 8 10)
-                          :game-status :in-progress}))
+                      :board (new-board 8 10)
+                      :game-status :in-progress}))
+
+(defn update-app-state [i j]
+  (swap! app-state assoc-in [:board i j :player] @player-to-move)
+  (swap! app-state update-in [:board i j :number] inc)
+  (reset! player-to-move ({"X" "Y", "Y" "X"} @player-to-move)))
 
 (defn rectangle [i j]
     [:svg 
