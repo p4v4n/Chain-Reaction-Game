@@ -1,6 +1,6 @@
 # chain-reaction
 
-FIXME: Write a one-line description of your library/project.
+Clojurescript implementation of the famous Chain Reaction game
 
 ## Overview
 
