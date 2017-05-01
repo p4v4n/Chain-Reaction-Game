@@ -3,6 +3,9 @@
 
 (enable-console-print!)
 
+(defn new-board [m n]
+    (vec (repeat m (vec (repeat n "B")))))
+
 (println "This text is printed from src/chain-reaction/core.cljs. Go ahead and edit it and see reloading in action.")
 
 ;; define your app data so that it doesn't get over-written on reload
