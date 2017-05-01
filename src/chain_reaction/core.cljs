@@ -11,22 +11,34 @@
 ;; define your app data so that it doesn't get over-written on reload
 
 (defonce app-state (atom {:text "Welcome to Chain Reaction Game"
-                          :board (new-board 9 9)
+                          :board (new-board 8 10)
                           :game-status :in-progress}))
 
 (defn rectangle
     [i j]
     [:rect 
-        {:width 0.28
-        :height 0.28
+        {:width 0.88
+        :height 0.88
         :fill "grey"
-        :x (+ 0.05 (* 0.3 i))
-        :y (+ 0.05 (* 0.3 j))}])
+        :x (+ 0.05 (* 0.9 i))
+        :y (+ 0.05 (* 0.9 j))}])
 
-(defn hello-world []
-  [:h1 (:text @app-state)])
+(defn chain-reaction []
+  [:div
+   [:h1 (:text @app-state)]
+   [:h4 
+   (case (get-in @app-state [:game-status])
+            :in-progress "Game in progress ")]
+   [:svg
+   {:view-box "0 0 8 10"
+   :width 500
+   :height 500} 
+   (for [i (range (count (:board @app-state)))
+         j (range (count (first (:board @app-state))))]
+      (case (get-in @app-state [:board i j])
+        "B" [rectangle j i]))]])
 
-(reagent/render-component [hello-world]
+(reagent/render-component [chain-reaction]
                           (. js/document (getElementById "app")))
 
 (defn on-js-reload []
