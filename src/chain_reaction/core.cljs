@@ -3,6 +3,9 @@
 
 (enable-console-print!)
 
+(def m 8)
+(def n 10)
+
 (defn new-board [m n]
     (vec (repeat m (vec (repeat n {:player "B" :number 0})))))
 
@@ -12,13 +15,14 @@
 ;; define your app data so that it doesn't get over-written on reload
 
 (def app-state (atom {:text "Welcome to Chain Reaction Game"
-                      :board (new-board 8 10)
+                      :board (new-board m n)
                       :game-status :in-progress}))
 
 (defn update-app-state [i j]
-  (swap! app-state assoc-in [:board i j :player] @player-to-move)
-  (swap! app-state update-in [:board i j :number] inc)
-  (reset! player-to-move ({"X" "Y", "Y" "X"} @player-to-move)))
+  (if (contains? #{"B" @player-to-move} (get-in @app-state [:board i j :player]))
+      (do (swap! app-state assoc-in [:board i j :player] @player-to-move)
+          (swap! app-state update-in [:board i j :number] inc)
+          (reset! player-to-move ({"X" "Y", "Y" "X"} @player-to-move)))))
 
 (defn rectangle [i j]
     [:svg 
