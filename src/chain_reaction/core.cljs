@@ -28,9 +28,16 @@
 (defn neighbours [i j]
     (filter valid-index [[(- i 1) j] [(+ i 1) j] [i (- j 1)] [i (+ j 1)]]))
 
+(defn neighbours-update [i j]
+  (loop [neighbour (neighbours i j)]
+    (if (empty? neighbour)
+        nil
+        (do (swap! app-state assoc-in [:board (first (first neighbour)) (second (first neighbour)) :player] @player-to-move)
+            (swap! app-state update-in [:board (first (first neighbour)) (second (first neighbour)) :number] inc)
+            (recur (rest neighbour))))))
+
 (defn split-update [[i j]]
-   (map #(do (swap! app-state assoc-in [:board (first %) (second %) :player] @player-to-move)
-             (swap! app-state update-in [:board (first %) (second %) :number] inc)) (neighbours i j))
+  (neighbours-update i j)
    (if (= (+ 1 (max-value i j)) (get-in @app-state [:board i j :number]))
        (do (swap! app-state assoc-in [:board i j :player] "B")
            (swap! app-state assoc-in [:board i j :number] 0))
@@ -47,7 +54,7 @@
   (if (contains? #{"B" @player-to-move} (get-in @app-state [:board i j :player]))
       (do (swap! app-state assoc-in [:board i j :player] @player-to-move)
           (swap! app-state update-in [:board i j :number] inc)
-          (while (> (count (ready-to-split)) 0) (map split-update (ready-to-split)))
+          (if (> (count (ready-to-split)) 0) (split-update (first (ready-to-split))))
           (reset! player-to-move ({"X" "Y", "Y" "X"} @player-to-move)))))
 
 (defn rectangle [i j]
