@@ -12,12 +12,25 @@
 
 (def player-color {"X" "Red" "Y" "Green" "B" "Grey"})
 (def player-to-move (atom "X"))
-
+(def player-data (atom {"X" {:number-of-moves 0, :number-of-boxes 0, :sum-of-boxes 0},
+                        "Y" {:number-of-moves 0, :number-of-boxes 0, :sum-of-boxes 0}}))
 ;; define your app data so that it doesn't get over-written on reload
 
 (def app-state (atom {:text "Welcome to Chain Reaction Game"
                       :board (new-board M N)
                       :game-status :in-progress}))
+
+(defn update-player-info []
+    (let [flat-board (flatten (@app-state :board))
+          nob-x (count (filter #(= "X" (% :player)) flat-board))
+          nob-y (count (filter #(= "Y" (% :player)) flat-board))
+          sob-x (reduce + (map #(% :number) (filter #(= "X" (% :player)) flat-board)))
+          sob-y (reduce + (map #(% :number) (filter #(= "Y" (% :player)) flat-board)))])
+    (swap! player-data update-in [@player-to-move :number-of-moves] inc)
+    (swap! player-data assoc-in ["X" :number-of-boxes] nob-x)
+    (swap! player-data assoc-in ["Y" :number-of-boxes] nob-y)
+    (swap! player-data assoc-in ["X" :sum-of-boxes] sob-x)
+    (swap! player-data assoc-in ["Y" :sum-of-boxes] sob-y))
 
 (defn max-value [i j]
     (- 3 (count (filter zero? [i j (- (- M 1) i) (- (- N 1) j)]))))
