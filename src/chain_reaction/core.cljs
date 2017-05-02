@@ -43,6 +43,13 @@
            (swap! app-state assoc-in [:board i j :number] 0))
        (swap! app-state update-in [:board i j :number] - (+ 1 (max-value i j)))))
 
+(defn overall-split-update [split-list]
+    (loop [li split-list]
+        (if (empty? li)
+            nil
+            (do (split-update (first li))
+                (recur (rest li))))))
+
 (defn ready-to-split
     []
     (for [i (range M)
@@ -54,7 +61,7 @@
   (if (contains? #{"B" @player-to-move} (get-in @app-state [:board i j :player]))
       (do (swap! app-state assoc-in [:board i j :player] @player-to-move)
           (swap! app-state update-in [:board i j :number] inc)
-          (if (> (count (ready-to-split)) 0) (split-update (first (ready-to-split))))
+          (while (> (count (ready-to-split)) 0) (overall-split-update (ready-to-split)))
           (reset! player-to-move ({"X" "Y", "Y" "X"} @player-to-move)))))
 
 (defn rectangle [i j]
