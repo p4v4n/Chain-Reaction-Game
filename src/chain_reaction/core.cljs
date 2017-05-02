@@ -4,6 +4,7 @@
 (enable-console-print!)
 
 (def M 8)
+
 (def N 10)
 
 (defn new-board [m n]
@@ -20,6 +21,12 @@
 
 (defn max-value [i j]
 	(- 3 (count (filter zero? [i j (- (- M 1) i) (- (- N 1) j)]))))
+
+(defn valid-index [[i j]]
+    (and (>= i 0) (>= j 0) (< i M) (< j N)))
+
+(defn neighbours [i j]
+	(filter valid-index [[(- i 1) j] [(+ i 1) j] [i (- j 1)] [i (+ j 1)]]))
 
 (defn ready-to-split
     []
