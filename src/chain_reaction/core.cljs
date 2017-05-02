@@ -25,12 +25,17 @@
           nob-x (count (filter #(= "X" (% :player)) flat-board))
           nob-y (count (filter #(= "Y" (% :player)) flat-board))
           sob-x (reduce + (map #(% :number) (filter #(= "X" (% :player)) flat-board)))
-          sob-y (reduce + (map #(% :number) (filter #(= "Y" (% :player)) flat-board)))])
+          sob-y (reduce + (map #(% :number) (filter #(= "Y" (% :player)) flat-board)))]
     (swap! player-data update-in [@player-to-move :number-of-moves] inc)
     (swap! player-data assoc-in ["X" :number-of-boxes] nob-x)
     (swap! player-data assoc-in ["Y" :number-of-boxes] nob-y)
     (swap! player-data assoc-in ["X" :sum-of-boxes] sob-x)
-    (swap! player-data assoc-in ["Y" :sum-of-boxes] sob-y))
+    (swap! player-data assoc-in ["Y" :sum-of-boxes] sob-y)))
+
+(defn win? []
+    (let [opp-player-data (@player-data ({"X" "Y", "Y" "X"} @player-to-move))]
+        (if (and (> (opp-player-data :number-of-moves) 0) (= (opp-player-data :number-of-boxes) 0))
+            (swap! app-state assoc-in [:game-status] (str @player-to-move "-won")))))
 
 (defn max-value [i j]
     (- 3 (count (filter zero? [i j (- (- M 1) i) (- (- N 1) j)]))))
@@ -75,6 +80,8 @@
       (do (swap! app-state assoc-in [:board i j :player] @player-to-move)
           (swap! app-state update-in [:board i j :number] inc)
           (while (> (count (ready-to-split)) 0) (overall-split-update (ready-to-split)))
+          (update-player-info)
+          (win?)
           (reset! player-to-move ({"X" "Y", "Y" "X"} @player-to-move)))))
 
 (defn rectangle [i j]
@@ -98,7 +105,9 @@
    [:h1 (:text @app-state)]
    [:h4
    (case (get-in @app-state [:game-status])
-            :in-progress "Game in progress ")]
+            :in-progress "Game in progress "
+            "X-won" "X-won"
+            "Y-won" "Y-won")]
    [:svg
    {:view-box "0 0 10 12"
    :width 500
