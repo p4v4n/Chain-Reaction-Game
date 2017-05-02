@@ -18,6 +18,9 @@
                       :board (new-board m n)
                       :game-status :in-progress}))
 
+(defn max-value [i j]
+	(- 3 (count (filter zero? [i j (- (- m 1) i) (- (- n 1) j)]))))
+
 (defn update-app-state [i j]
   (if (contains? #{"B" @player-to-move} (get-in @app-state [:board i j :player]))
       (do (swap! app-state assoc-in [:board i j :player] @player-to-move)
