@@ -28,6 +28,14 @@
 (defn neighbours [i j]
 	(filter valid-index [[(- i 1) j] [(+ i 1) j] [i (- j 1)] [i (+ j 1)]]))
 
+(defn split-update [i j]
+   (map #(do (swap! app-state assoc-in [:board (first %) (second %) :player] @player-to-move)
+             (swap! app-state update-in [:board (first %) (second %) :number] inc)) (neighbours i j))
+   (if (= (+ 1 (max-value i j)) (get-in @app-state [:board i j :number])
+       (do (swap! app-state assoc-in [:board i j :player] "B")
+           (swap! app-state update-in [:board i j :number] 0))
+       (swap! app-state update-in [:board i j :number] - (max-value i j)))))
+
 (defn ready-to-split
     []
     (for [i (range M)
