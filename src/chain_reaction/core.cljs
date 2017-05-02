@@ -20,21 +20,21 @@
                       :game-status :in-progress}))
 
 (defn max-value [i j]
-	(- 3 (count (filter zero? [i j (- (- M 1) i) (- (- N 1) j)]))))
+    (- 3 (count (filter zero? [i j (- (- M 1) i) (- (- N 1) j)]))))
 
 (defn valid-index [[i j]]
     (and (>= i 0) (>= j 0) (< i M) (< j N)))
 
 (defn neighbours [i j]
-	(filter valid-index [[(- i 1) j] [(+ i 1) j] [i (- j 1)] [i (+ j 1)]]))
+    (filter valid-index [[(- i 1) j] [(+ i 1) j] [i (- j 1)] [i (+ j 1)]]))
 
-(defn split-update [i j]
+(defn split-update [[i j]]
    (map #(do (swap! app-state assoc-in [:board (first %) (second %) :player] @player-to-move)
              (swap! app-state update-in [:board (first %) (second %) :number] inc)) (neighbours i j))
-   (if (= (+ 1 (max-value i j)) (get-in @app-state [:board i j :number])
+   (if (= (+ 1 (max-value i j)) (get-in @app-state [:board i j :number]))
        (do (swap! app-state assoc-in [:board i j :player] "B")
-           (swap! app-state update-in [:board i j :number] 0))
-       (swap! app-state update-in [:board i j :number] - (max-value i j)))))
+           (swap! app-state assoc-in [:board i j :number] 0))
+       (swap! app-state update-in [:board i j :number] - (+ 1 (max-value i j)))))
 
 (defn ready-to-split
     []
@@ -47,6 +47,7 @@
   (if (contains? #{"B" @player-to-move} (get-in @app-state [:board i j :player]))
       (do (swap! app-state assoc-in [:board i j :player] @player-to-move)
           (swap! app-state update-in [:board i j :number] inc)
+          (while (> (count (ready-to-split)) 0) (map split-update (ready-to-split)))
           (reset! player-to-move ({"X" "Y", "Y" "X"} @player-to-move)))))
 
 (defn rectangle [i j]
@@ -68,13 +69,13 @@
 (defn chain-reaction []
   [:div
    [:h1 (:text @app-state)]
-   [:h4 
+   [:h4
    (case (get-in @app-state [:game-status])
             :in-progress "Game in progress ")]
    [:svg
    {:view-box "0 0 10 12"
    :width 500
-   :height 500} 
+   :height 500}
    (for [i (range M)
          j (range N)]
       [rectangle j i])]])
