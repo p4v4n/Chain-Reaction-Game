@@ -20,6 +20,15 @@
                       :board (new-board M N)
                       :game-status :in-progress}))
 
+(defn reset-app-state
+    []
+    (reset! app-state {:text "Welcome to Chain Reaction Game"
+                       :board (new-board M N)
+                       :game-status :in-progress})
+    (reset! player-to-move "X")
+    (reset! player-data {"X" {:number-of-moves 0, :number-of-boxes 0, :sum-of-boxes 0},
+                         "Y" {:number-of-moves 0, :number-of-boxes 0, :sum-of-boxes 0}}))
+
 (defn update-player-info []
     (let [flat-board (flatten (@app-state :board))
           nob-x (count (filter #(= "X" (% :player)) flat-board))
@@ -108,7 +117,10 @@
    (case (get-in @app-state [:game-status])
             :in-progress "Game in progress "
             "X-won" "X-won"
-            "Y-won" "Y-won")]
+            "Y-won" "Y-won")
+   [:button {:on-click
+             (fn [e]
+                (reset-app-state))} "Restart the game"]]
    [:svg
    {:view-box "0 0 10 12"
    :width 500
