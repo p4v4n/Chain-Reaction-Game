@@ -1,6 +1,4 @@
-# chain-reaction
-
-Clojurescript implementation of the popular Chain Reaction game
+# Chain-Reaction
 
 ## Overview
 
