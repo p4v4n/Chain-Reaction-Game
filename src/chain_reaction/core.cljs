@@ -3,9 +3,9 @@
 
 (enable-console-print!)
 
-(def M 8)
+(def M (atom 8))
 
-(def N 10)
+(def N (atom 10))
 
 (defn new-board [m n]
     (vec (repeat m (vec (repeat n {:player "B" :number 0})))))
@@ -17,13 +17,13 @@
 ;; define your app data so that it doesn't get over-written on reload
 
 (def app-state (atom {:text "Welcome to Chain Reaction Game"
-                      :board (new-board M N)
+                      :board (new-board @M @N)
                       :game-status :in-progress}))
 
 (defn reset-app-state
     []
     (reset! app-state {:text "Welcome to Chain Reaction Game"
-                       :board (new-board M N)
+                       :board (new-board @M @N)
                        :game-status :in-progress})
     (reset! player-to-move "X")
     (reset! player-data {"X" {:number-of-moves 0, :number-of-boxes 0, :sum-of-boxes 0},
@@ -47,10 +47,10 @@
             (swap! app-state assoc-in [:game-status] (str @player-to-move "-won")))))
 
 (defn max-value [i j]
-    (- 3 (count (filter zero? [i j (- (- M 1) i) (- (- N 1) j)]))))
+    (- 3 (count (filter zero? [i j (- (- @M 1) i) (- (- @N 1) j)]))))
 
 (defn valid-index [[i j]]
-    (and (>= i 0) (>= j 0) (< i M) (< j N)))
+    (and (>= i 0) (>= j 0) (< i @M) (< j @N)))
 
 (defn neighbours [i j]
     (filter valid-index [[(- i 1) j] [(+ i 1) j] [i (- j 1)] [i (+ j 1)]]))
@@ -79,8 +79,8 @@
 
 (defn ready-to-split
     []
-    (for [i (range M)
-          j (range N)
+    (for [i (range @M)
+          j (range @N)
             :when (> (get-in @app-state [:board i j :number]) (max-value i j))]
         [i j]))
 
@@ -127,8 +127,8 @@
    {:view-box "0 0 10 12"
    :width 500
    :height 500}
-   (for [i (range M)
-         j (range N)]
+   (for [i (range @M)
+         j (range @N)]
       [rectangle j i])]])
 
 (reagent/render-component [chain-reaction]
