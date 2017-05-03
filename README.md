@@ -1,10 +1,34 @@
 # chain-reaction
 
-Clojurescript implementation of the famous Chain Reaction game
+Clojurescript implementation of the popular Chain Reaction game
 
 ## Overview
 
-FIXME: Write a paragraph about the library/project and highlight its goals.
+A 2-player implementation of the chain-reaction game.
+
+Read the rules of the game [here](https://brilliant.org/wiki/chain-reaction-game/).
+
+## How to run the app
+
+#### Software requirements :
+
+- [Git](https://git-scm.com/)
+- [Java](https://java.com/en/download/)
+- [Leiningen](https://leiningen.org/)
+- [Figwheel](https://github.com/bhauman/lein-figwheel)
+
+Clone the repo:
+
+```
+git clone https://github.com/p4v4n/Chain-Reaction-Game
+cd Chain-Reaction-Game
+```
+
+Run app
+
+```
+lein figwheel
+```
 
 ## Setup
 
@@ -34,6 +58,6 @@ get live reloading, nor a REPL.
 
 ## License
 
-Copyright © 2014 FIXME
+Copyright © 2017
 
 Distributed under the Eclipse Public License either version 1.0 or (at your option) any later version.
