@@ -116,8 +116,8 @@
    [:h4
    (case (get-in @app-state [:game-status])
             :in-progress "Game in progress "
-            "X-won" "X-won"
-            "Y-won" "Y-won")
+            "X-won" "X-won "
+            "Y-won" "Y-won ")
    [:button {:on-click
              (fn [e]
                 (reset-app-state))} "Restart the game"]]
