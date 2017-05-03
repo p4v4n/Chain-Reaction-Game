@@ -1,5 +1,6 @@
 (ns chain-reaction.core
-  (:require [reagent.core :as reagent :refer [atom]]))
+  (:require [reagent.core :as reagent :refer [atom]]
+            [clojure.string :as str]))
 
 (enable-console-print!)
 
@@ -130,6 +131,16 @@
    (for [i (range @M)
          j (range @N)]
       [rectangle j i])]])
+
+(defn start-game-handler []
+  (let [rows (js/parseInt (str/trim (.-value (.getElementById js/document "rows"))))
+        columns (js/parseInt (str/trim (.-value (.getElementById js/document "columns"))))
+        players (js/parseInt (str/trim (.-value (.getElementById js/document "players"))))]
+        (reset! M rows)
+        (reset! N columns)
+        (set! (.-display (.-style (.getElementById js/document "start-game-container"))) "none")))
+
+(.addEventListener (.getElementById js/document "start-game-button") "click" start-game-handler)
 
 (reagent/render-component [chain-reaction]
                           (. js/document (getElementById "app")))
