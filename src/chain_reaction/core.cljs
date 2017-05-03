@@ -138,9 +138,11 @@
         players (js/parseInt (str/trim (.-value (.getElementById js/document "players"))))]
         (reset! M rows)
         (reset! N columns)
-        (set! (.-display (.-style (.getElementById js/document "start-game-container"))) "none")))
+        (set! (.-display (.-style (.getElementById js/document "start-game-container"))) "none")
+        (.play (.getElementById js/document "audio"))))
 
 (.addEventListener (.getElementById js/document "start-game-button") "click" start-game-handler)
+
 
 (reagent/render-component [chain-reaction]
                           (. js/document (getElementById "app")))
