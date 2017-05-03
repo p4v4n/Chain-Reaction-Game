@@ -10,7 +10,7 @@
 (defn new-board [m n]
     (vec (repeat m (vec (repeat n {:player "B" :number 0})))))
 
-(def player-color {"X" "Red" "Y" "Green" "B" "Grey"})
+(def player-color {"X" "Red" "Y" "Green" "B" "Black"})
 (def player-to-move (atom "X"))
 (def player-data (atom {"X" {:number-of-moves 0, :number-of-boxes 0, :sum-of-boxes 0},
                         "Y" {:number-of-moves 0, :number-of-boxes 0, :sum-of-boxes 0}}))
@@ -103,7 +103,9 @@
       :height 0.88
       :fill (player-color (get-in @app-state [:board j i :player]))
       :x (+ 0.05 (* 0.9 i))
-      :y (+ 0.05 (* 0.9 j))}]
+      :y (+ 0.05 (* 0.9 j))
+      :stroke (player-color @player-to-move)
+      :stroke-width 0.015}]
     [:text {:x (+ 0.25 (* 0.9 i))
             :y (+ 0.70 (* 0.9 j))
             :font-size 0.7} (let [text (get-in @app-state [:board j i :number])]
