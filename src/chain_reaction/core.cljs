@@ -110,7 +110,7 @@
     [:rect 
       {:width 0.88
       :height 0.88
-      :fill "White"
+      :fill "Black"
       :x (* 0.9 i)
       :y (* 0.9 j)
       :stroke (player-color @player-to-move)
@@ -131,8 +131,8 @@
                 (reset-app-state))} "Restart the game"]]
    [:svg
    {:view-box "0 0 10 12"
-   :width 800
-   :height 800}
+   :width 750
+   :height 750}
    (for [i (range @M)
          j (range @N)]
       [rectangle j i])]])
