@@ -145,7 +145,25 @@
    :height 750}
    (for [i (range @M)
          j (range @N)]
-      [rectangle j i])]])
+      [rectangle j i])]
+   [:table 
+    [:thead 
+        [:tr {:style {:background-color "Indigo" }}
+            [:td "Player-Name"]
+            [:td "No. of moves"]
+            [:td "No. of boxes"]
+            [:td "Score"]]]
+    [:tbody
+        [:tr {:style {:background-color "Red"}}
+            [:td "X"]
+            [:td (get-in @app-state [:player-data "X" :number-of-moves])]
+            [:td (get-in @app-state [:player-data "X" :number-of-boxes])]
+            [:td (get-in @app-state [:player-data "X" :sum-of-boxes])]]
+        [:tr {:style {:background-color "Green"}}
+            [:td "Y"]
+            [:td (get-in @app-state [:player-data "Y" :number-of-moves])]
+            [:td (get-in @app-state [:player-data "Y" :number-of-boxes])]
+            [:td (get-in @app-state [:player-data "Y" :sum-of-boxes])]]]]])
 
 (defn start-game-handler []
   (let [rows (js/parseInt (str/trim (.-value (.getElementById js/document "rows"))))
