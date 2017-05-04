@@ -13,23 +13,24 @@
     (vec (repeat m (vec (repeat n {:player "B" :number 0})))))
 
 (def player-color {"X" "Red" "Y" "Green" "B" "Black"})
-(def player-to-move (atom "X"))
-(def player-data (atom {"X" {:number-of-moves 0, :number-of-boxes 0, :sum-of-boxes 0},
-                        "Y" {:number-of-moves 0, :number-of-boxes 0, :sum-of-boxes 0}}))
+
 ;; define your app data so that it doesn't get over-written on reload
 
 (def app-state (atom {:text "Welcome to Chain Reaction Game"
                       :board (new-board @M @N)
-                      :game-status :in-progress}))
+                      :game-status :in-progress
+                      :player-to-move "X"
+                      :player-data {"X" {:number-of-moves 0, :number-of-boxes 0, :sum-of-boxes 0},
+                                    "Y" {:number-of-moves 0, :number-of-boxes 0, :sum-of-boxes 0}}}))
 
 (defn reset-app-state
     []
     (reset! app-state {:text "Welcome to Chain Reaction Game"
                        :board (new-board @M @N)
-                       :game-status :in-progress})
-    (reset! player-to-move "X")
-    (reset! player-data {"X" {:number-of-moves 0, :number-of-boxes 0, :sum-of-boxes 0},
-                         "Y" {:number-of-moves 0, :number-of-boxes 0, :sum-of-boxes 0}}))
+                       :game-status :in-progress
+                       :player-to-move "X"
+                       :player-data {"X" {:number-of-moves 0, :number-of-boxes 0, :sum-of-boxes 0},
+                                     "Y" {:number-of-moves 0, :number-of-boxes 0, :sum-of-boxes 0}}}))
 
 (defn update-player-info []
     (let [flat-board (flatten (@app-state :board))
@@ -37,16 +38,16 @@
           nob-y (count (filter #(= "Y" (% :player)) flat-board))
           sob-x (reduce + (map #(% :number) (filter #(= "X" (% :player)) flat-board)))
           sob-y (reduce + (map #(% :number) (filter #(= "Y" (% :player)) flat-board)))]
-    (swap! player-data update-in [@player-to-move :number-of-moves] inc)
-    (swap! player-data assoc-in ["X" :number-of-boxes] nob-x)
-    (swap! player-data assoc-in ["Y" :number-of-boxes] nob-y)
-    (swap! player-data assoc-in ["X" :sum-of-boxes] sob-x)
-    (swap! player-data assoc-in ["Y" :sum-of-boxes] sob-y)))
+    (swap! app-state update-in [:player-data (@app-state :player-to-move) :number-of-moves] inc)
+    (swap! app-state assoc-in [:player-data "X" :number-of-boxes] nob-x)
+    (swap! app-state assoc-in [:player-data "Y" :number-of-boxes] nob-y)
+    (swap! app-state assoc-in [:player-data "X" :sum-of-boxes] sob-x)
+    (swap! app-state assoc-in [:player-data "Y" :sum-of-boxes] sob-y)))
 
 (defn win? []
-    (let [opp-player-data (@player-data ({"X" "Y", "Y" "X"} @player-to-move))]
+    (let [opp-player-data ((@app-state :player-data) ({"X" "Y", "Y" "X"} (@app-state :player-to-move)))]
         (if (and (> (opp-player-data :number-of-moves) 0) (= (opp-player-data :number-of-boxes) 0))
-            (swap! app-state assoc-in [:game-status] (str @player-to-move "-won")))))
+            (swap! app-state assoc-in [:game-status] (str (@app-state :player-to-move) "-won")))))
 
 (defn max-value [i j]
     (- 3 (count (filter zero? [i j (- (- @M 1) i) (- (- @N 1) j)]))))
@@ -61,7 +62,7 @@
   (loop [neighbour (neighbours i j)]
     (if (empty? neighbour)
         nil
-        (do (swap! app-state assoc-in [:board (first (first neighbour)) (second (first neighbour)) :player] @player-to-move)
+        (do (swap! app-state assoc-in [:board (first (first neighbour)) (second (first neighbour)) :player] (@app-state :player-to-move))
             (swap! app-state update-in [:board (first (first neighbour)) (second (first neighbour)) :number] inc)
             (recur (rest neighbour))))))
 
@@ -100,13 +101,13 @@
     (= n 3) (render/three-circles i j color)))
 
 (defn update-app-state [i j]
-  (if (contains? #{"B" @player-to-move} (get-in @app-state [:board i j :player]))
-      (do (swap! app-state assoc-in [:board i j :player] @player-to-move)
+  (if (contains? #{"B" (@app-state :player-to-move)} (get-in @app-state [:board i j :player]))
+      (do (swap! app-state assoc-in [:board i j :player] (@app-state :player-to-move))
           (swap! app-state update-in [:board i j :number] inc)
           (while (> (count (ready-to-split)) 0) (overall-split-update (ready-to-split)))
           (update-player-info)
           (win?)
-          (reset! player-to-move ({"X" "Y", "Y" "X"} @player-to-move)))))
+          (swap! app-state assoc-in [:player-to-move] ({"X" "Y", "Y" "X"} (@app-state :player-to-move))))))
 
 (defn rectangle [i j]
     [:svg 
@@ -119,7 +120,7 @@
       :fill "Black"
       :x (* 0.9 i)
       :y (* 0.9 j)
-      :stroke (player-color @player-to-move)
+      :stroke (player-color (@app-state :player-to-move))
       :stroke-width 0.015}]
     (make-circle i j (get-in @app-state [:board j i :number]) (player-color (get-in @app-state [:board j i :player])))])
 
