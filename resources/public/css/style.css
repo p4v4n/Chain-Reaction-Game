@@ -1,5 +1,9 @@
 /* some style */
 
+body{
+	font-family: Arial;
+}
+
 #start-game-container {
 width:100%;
 height:100%;
