@@ -1,6 +1,7 @@
 (ns chain-reaction.core
   (:require [reagent.core :as reagent :refer [atom]]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [chain-reaction.render-circle :as render]))
 
 (enable-console-print!)
 
@@ -85,6 +86,13 @@
             :when (> (get-in @app-state [:board i j :number]) (max-value i j))]
         [i j]))
 
+(defn make-circle [i j n color]
+  (cond
+    (= n 0) '()
+    (= n 1) (render/one-circle i j color)
+    (= n 2) (render/two-circles i j color)
+    (= n 3) (render/three-circles i j color)))
+
 (defn update-app-state [i j]
   (if (contains? #{"B" @player-to-move} (get-in @app-state [:board i j :player]))
       (do (swap! app-state assoc-in [:board i j :player] @player-to-move)
@@ -102,15 +110,12 @@
     [:rect 
       {:width 0.88
       :height 0.88
-      :fill (player-color (get-in @app-state [:board j i :player]))
+      :fill "White"
       :x (+ 0.05 (* 0.9 i))
       :y (+ 0.05 (* 0.9 j))
       :stroke (player-color @player-to-move)
       :stroke-width 0.015}]
-    [:text {:x (+ 0.25 (* 0.9 i))
-            :y (+ 0.70 (* 0.9 j))
-            :font-size 0.7} (let [text (get-in @app-state [:board j i :number])]
-                                 (if (not= 0 text) (str text)))]])
+    (make-circle i j (get-in @app-state [:board i j :number]) (player-color (get-in @app-state [:board i j :player])))])
 
 
 (defn chain-reaction []
