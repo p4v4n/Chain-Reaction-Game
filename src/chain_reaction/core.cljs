@@ -111,11 +111,11 @@
       {:width 0.88
       :height 0.88
       :fill "White"
-      :x (+ 0.05 (* 0.9 i))
-      :y (+ 0.05 (* 0.9 j))
+      :x (* 0.9 i)
+      :y (* 0.9 j)
       :stroke (player-color @player-to-move)
       :stroke-width 0.015}]
-    (make-circle i j (get-in @app-state [:board i j :number]) (player-color (get-in @app-state [:board i j :player])))])
+    (make-circle i j (get-in @app-state [:board j i :number]) (player-color (get-in @app-state [:board j i :player])))])
 
 
 (defn chain-reaction []
@@ -131,8 +131,8 @@
                 (reset-app-state))} "Restart the game"]]
    [:svg
    {:view-box "0 0 10 12"
-   :width 500
-   :height 500}
+   :width 800
+   :height 800}
    (for [i (range @M)
          j (range @N)]
       [rectangle j i])]])
