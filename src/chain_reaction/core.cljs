@@ -86,6 +86,12 @@
             :when (> (get-in @app-state [:board i j :number]) (max-value i j))]
         [i j]))
 
+(defn play-pause-music
+    []
+    (if (.-paused (.getElementById js/document "audio"))
+        (.play (.getElementById js/document "audio"))
+        (.pause (.getElementById js/document "audio"))))
+
 (defn make-circle [i j n color]
   (cond
     (= n 0) '()
@@ -128,7 +134,10 @@
             "Y-won" "Y-won ")
    [:button {:on-click
              (fn [e]
-                (reset-app-state))} "Restart the game"]]
+                (reset-app-state))} "Restart the game"]
+    [:button {:on-click
+              (fn [e]
+                 (play-pause-music))} "Play/Pause Music"]]
    [:svg
    {:view-box "0 0 10 12"
    :width 750
