@@ -14,8 +14,6 @@
 
 (def player-color {"X" "Red" "Y" "Green" "B" "Black"})
 
-;; define your app data so that it doesn't get over-written on reload
-
 (def app-state (atom {:text "Welcome to Chain Reaction Game"
                       :board (new-board @M @N)
                       :game-status :in-progress
@@ -23,8 +21,7 @@
                       :player-data {"X" {:number-of-moves 0, :number-of-boxes 0, :sum-of-boxes 0},
                                     "Y" {:number-of-moves 0, :number-of-boxes 0, :sum-of-boxes 0}}}))
 
-(defn reset-app-state
-    []
+(defn reset-app-state []
     (reset! app-state {:text "Welcome to Chain Reaction Game"
                        :board (new-board @M @N)
                        :game-status :in-progress
@@ -33,20 +30,20 @@
                                      "Y" {:number-of-moves 0, :number-of-boxes 0, :sum-of-boxes 0}}}))
 
 (defn update-player-info []
-    (let [flat-board (flatten (@app-state :board))
-          nob-x (count (filter #(= "X" (% :player)) flat-board))
-          nob-y (count (filter #(= "Y" (% :player)) flat-board))
-          sob-x (reduce + (map #(% :number) (filter #(= "X" (% :player)) flat-board)))
-          sob-y (reduce + (map #(% :number) (filter #(= "Y" (% :player)) flat-board)))]
+    (let [flattened-board (flatten (@app-state :board))
+          box-count-x (count (filter #(= "X" (% :player)) flattened-board))
+          box-count-y (count (filter #(= "Y" (% :player)) flattened-board))
+          score-x (reduce + (map #(% :number) (filter #(= "X" (% :player)) flattened-board)))
+          score-y (reduce + (map #(% :number) (filter #(= "Y" (% :player)) flattened-board)))]
     (swap! app-state update-in [:player-data (@app-state :player-to-move) :number-of-moves] inc)
-    (swap! app-state assoc-in [:player-data "X" :number-of-boxes] nob-x)
-    (swap! app-state assoc-in [:player-data "Y" :number-of-boxes] nob-y)
-    (swap! app-state assoc-in [:player-data "X" :sum-of-boxes] sob-x)
-    (swap! app-state assoc-in [:player-data "Y" :sum-of-boxes] sob-y)))
+    (swap! app-state assoc-in [:player-data "X" :number-of-boxes] box-count-x)
+    (swap! app-state assoc-in [:player-data "Y" :number-of-boxes] box-count-y)
+    (swap! app-state assoc-in [:player-data "X" :sum-of-boxes] score-x)
+    (swap! app-state assoc-in [:player-data "Y" :sum-of-boxes] score-y)))
 
 (defn win? []
-    (let [opp-player-data ((@app-state :player-data) ({"X" "Y", "Y" "X"} (@app-state :player-to-move)))]
-        (if (and (> (opp-player-data :number-of-moves) 0) (= (opp-player-data :number-of-boxes) 0))
+    (let [opponent-data ((@app-state :player-data) ({"X" "Y", "Y" "X"} (@app-state :player-to-move)))]
+        (if (and (> (opponent-data :number-of-moves) 0) (= (opponent-data :number-of-boxes) 0))
             (swap! app-state assoc-in [:game-status] (str (@app-state :player-to-move) "-won")))))
 
 (defn max-value [i j]
@@ -59,36 +56,36 @@
     (filter valid-index [[(- i 1) j] [(+ i 1) j] [i (- j 1)] [i (+ j 1)]]))
 
 (defn neighbours-update [i j]
-  (loop [neighbour (neighbours i j)]
-    (if (empty? neighbour)
+  (loop [neighbour-list (neighbours i j)]
+    (if (empty? neighbour-list)
         nil
-        (do (swap! app-state assoc-in [:board (first (first neighbour)) (second (first neighbour)) :player] (@app-state :player-to-move))
-            (swap! app-state update-in [:board (first (first neighbour)) (second (first neighbour)) :number] inc)
-            (recur (rest neighbour))))))
+        (let [neighbour-row (first (first neighbour-list))
+              neighbour-column (second (first neighbour-list))]
+        (do (swap! app-state assoc-in [:board neighbour-row neighbour-column :player] (@app-state :player-to-move))
+            (swap! app-state update-in [:board neighbour-row neighbour-column :number] inc)
+            (recur (rest neighbour-list)))))))
 
 (defn split-update [[i j]]
-  (neighbours-update i j)
    (if (= (+ 1 (max-value i j)) (get-in @app-state [:board i j :number]))
        (do (swap! app-state assoc-in [:board i j :player] "B")
            (swap! app-state assoc-in [:board i j :number] 0))
-       (swap! app-state update-in [:board i j :number] - (+ 1 (max-value i j)))))
+       (swap! app-state update-in [:board i j :number] - (+ 1 (max-value i j))))
+   (neighbours-update i j))
 
-(defn overall-split-update [split-list]
-    (loop [li split-list]
-        (if (empty? li)
+(defn overall-split-update [li]
+    (loop [split-list li]
+        (if (empty? split-list)
             nil
-            (do (split-update (first li))
-                (recur (rest li))))))
+            (do (split-update (first split-list))
+                (recur (rest split-list))))))
 
-(defn ready-to-split
-    []
+(defn ready-to-split []
     (for [i (range @M)
           j (range @N)
             :when (> (get-in @app-state [:board i j :number]) (max-value i j))]
         [i j]))
 
-(defn play-pause-music
-    []
+(defn play-pause-music []
     (if (.-paused (.getElementById js/document "audio"))
         (.play (.getElementById js/document "audio"))
         (.pause (.getElementById js/document "audio"))))
@@ -101,7 +98,7 @@
     (= n 3) (render/three-circles i j color)))
 
 (defn update-app-state [i j]
-  (if (contains? #{"B" (@app-state :player-to-move)} (get-in @app-state [:board i j :player]))
+  (if (contains? #{"B", (@app-state :player-to-move)} (get-in @app-state [:board i j :player]))
       (do (swap! app-state assoc-in [:board i j :player] (@app-state :player-to-move))
           (swap! app-state update-in [:board i j :number] inc)
           (while (> (count (ready-to-split)) 0) (overall-split-update (ready-to-split)))
@@ -184,7 +181,6 @@
                           (. js/document (getElementById "app")))
 
 (defn on-js-reload []
-  ;; optionally touch your app-state to force rerendering depending on
-  ;; your application
+  ;; optionally touch your app-state to force rerendering depending on your application
   ;; (swap! app-state update-in [:__figwheel_counter] inc)
 )
