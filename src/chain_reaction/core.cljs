@@ -5,9 +5,9 @@
 
 (enable-console-print!)
 
-(def M (atom 8))
+(def M (atom 0))
 
-(def N (atom 10))
+(def N (atom 0))
 
 (defn new-board [m n]
     (vec (repeat m (vec (repeat n {:player "B" :number 0})))))
@@ -133,10 +133,12 @@
             :in-progress "Game in progress "
             "X-won" "X-won "
             "Y-won" "Y-won ")
-   [:button {:on-click
+   [:button {:id "restart-game-button"
+             :on-click
              (fn [e]
                 (reset-app-state))} "Restart the game"]
-    [:button {:on-click
+    [:button {:id "play-pause-music-button"
+              :on-click
               (fn [e]
                  (play-pause-music))} "Play/Pause Music"]]
    [:svg
@@ -171,6 +173,7 @@
         players (js/parseInt (str/trim (.-value (.getElementById js/document "players"))))]
         (reset! M rows)
         (reset! N columns)
+        (reset-app-state)
         (set! (.-display (.-style (.getElementById js/document "start-game-container"))) "none")
         (.play (.getElementById js/document "audio"))))
 
