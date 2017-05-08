@@ -80,10 +80,10 @@
                 (recur (rest split-list))))))
 
 (defn ready-to-split []
-    (for [i (range @M)
+    (vec (for [i (range @M)
           j (range @N)
             :when (> (get-in @app-state [:board i j :number]) (max-value i j))]
-        [i j]))
+        [i j])))
 
 (defn play-pause-music []
     (if (.-paused (.getElementById js/document "audio"))
