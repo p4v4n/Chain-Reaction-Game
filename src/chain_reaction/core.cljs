@@ -9,6 +9,8 @@
 
 (def N (atom 0))
 
+(def flag (atom false))
+
 (defn new-board [m n]
     (vec (repeat m (vec (repeat n {:player "B" :number 0})))))
 
@@ -35,7 +37,6 @@
           box-count-y (count (filter #(= "Y" (% :player)) flattened-board))
           score-x (reduce + (map #(% :number) (filter #(= "X" (% :player)) flattened-board)))
           score-y (reduce + (map #(% :number) (filter #(= "Y" (% :player)) flattened-board)))]
-    (swap! app-state update-in [:player-data (@app-state :player-to-move) :number-of-moves] inc)
     (swap! app-state assoc-in [:player-data "X" :number-of-boxes] box-count-x)
     (swap! app-state assoc-in [:player-data "Y" :number-of-boxes] box-count-y)
     (swap! app-state assoc-in [:player-data "X" :sum-of-boxes] score-x)
@@ -101,10 +102,7 @@
   (if (contains? #{"B", (@app-state :player-to-move)} (get-in @app-state [:board i j :player]))
       (do (swap! app-state assoc-in [:board i j :player] (@app-state :player-to-move))
           (swap! app-state update-in [:board i j :number] inc)
-          (while (> (count (ready-to-split)) 0) (overall-split-update (ready-to-split)))
-          (update-player-info)
-          (win?)
-          (swap! app-state assoc-in [:player-to-move] ({"X" "Y", "Y" "X"} (@app-state :player-to-move))))))
+          (reset! flag true))))
 
 (defn rectangle [i j]
     [:svg 
@@ -176,6 +174,19 @@
 
 (.addEventListener (.getElementById js/document "start-game-button") "click" start-game-handler)
 
+(js/setInterval (fn [e]
+                  (if @flag
+                      (if (and (= :in-progress (@app-state :game-status)) (> (count (ready-to-split)) 0))
+                          (do
+                            (overall-split-update (ready-to-split))
+                            (update-player-info)            
+                            (win?))
+                          (do
+                            (reset! flag false)
+                            (update-player-info)
+                            (swap! app-state update-in [:player-data (@app-state :player-to-move) :number-of-moves] inc)
+                            (swap! app-state assoc-in [:player-to-move] ({"X" "Y", "Y" "X"} (@app-state :player-to-move))))))) 
+                200)
 
 (reagent/render-component [chain-reaction]
                           (. js/document (getElementById "app")))
