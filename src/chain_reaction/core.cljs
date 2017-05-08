@@ -107,7 +107,7 @@
 (defn rectangle [i j]
     [:svg 
       {:on-click (fn [e]
-                    (when (= :in-progress (@app-state :game-status))
+                    (when (and (= :in-progress (@app-state :game-status)) (not @flag))
                           (update-app-state j i)))}
     [:rect 
       {:width 0.88
