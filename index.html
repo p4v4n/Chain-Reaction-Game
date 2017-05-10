@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="css/style.css" rel="stylesheet" type="text/css">
+    <link rel="icon" href="https://clojurescript.org/images/cljs-logo-icon-32.png">
+  </head>
+
+  <body>
+    <div id="start-game-container">
+        <!-- Popup Div Starts Here -->
+        <div id="start-game-info">
+            <h1 id="game-data-heading">Enter Game Settings</h1>
+            <input id="rows" placeholder="Enter the number of rows" required="yes" type="text">
+            <input id="columns" placeholder="Enter the number of columns" required="yes" type="text">
+            <input id="players" placeholder="Enter the number of players" required="yes" type="text">
+            <button id="start-game-button">Start Game</button>
+        </div>
+        <!-- Popup Div Ends Here -->
+    </div>
+
+    <div id="app">
+      <h2>Figwheel template</h2>
+      <p>Checkout your developer console.</p>
+    </div>
+
+    <audio id="audio" src="audio/Dream.mp3"></audio>
+
+    <script src="js/compiled/chain_reaction.js" type="text/javascript"></script>
+  </body>
+</html>
