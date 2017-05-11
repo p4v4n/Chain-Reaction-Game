@@ -1,5 +1,7 @@
 # Chain-Reaction
 
+[Play The Game Here](https://p4v4n.github.io/Chain-Reaction-Game/)
+
 ## Overview
 
 A 2-player implementation of the chain-reaction game.
