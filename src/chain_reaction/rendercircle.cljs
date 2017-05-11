@@ -1,4 +1,4 @@
-(ns chain-reaction.render-circle)
+(ns chain-reaction.rendercircle)
 
 (defn one-circle [i j color]
   [:circle

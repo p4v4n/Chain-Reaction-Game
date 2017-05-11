@@ -1,7 +1,7 @@
 (ns chain-reaction.core
   (:require [reagent.core :as reagent :refer [atom]]
             [clojure.string :as str]
-            [chain-reaction.render-circle :as render]))
+            [chain-reaction.rendercircle :as render]))
 
 (enable-console-print!)
 
