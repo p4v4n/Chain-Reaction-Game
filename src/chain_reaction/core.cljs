@@ -61,7 +61,7 @@
     (swap! app-state assoc-in [:player-data "P2" :sum-of-boxes] score-p2)))
 
 (defn win? []
-    (let [opponent-data ((@app-state :player-data) (next-player current-players (@app-state :player-to-move)))]
+    (let [opponent-data ((@app-state :player-data) (next-player @current-players (@app-state :player-to-move)))]
         (if (and (> (opponent-data :number-of-moves) 0) (= (opponent-data :number-of-boxes) 0))
             (swap! app-state assoc-in [:game-status] (str (@app-state :player-to-move) "-won")))))
 
@@ -133,9 +133,9 @@
       :fill "Black"
       :x (* 0.9 i)
       :y (* 0.9 j)
-      :stroke (player-color (@app-state :player-to-move))
+      :stroke (@player-color (@app-state :player-to-move))
       :stroke-width 0.015}]
-    (make-circle i j (get-in @app-state [:board j i :number]) (player-color (get-in @app-state [:board j i :player])))])
+    (make-circle i j (get-in @app-state [:board j i :number]) (@player-color (get-in @app-state [:board j i :player])))])
 
 
 (defn chain-reaction []
@@ -144,8 +144,8 @@
    [:h4
    (case (get-in @app-state [:game-status])
             :in-progress "Game in progress "
-            "X-won" "X-won "
-            "Y-won" "Y-won ")
+            "P1-won" "P1-won "
+            "P2-won" "P2-won ")
    [:button {:id "restart-game-button"
              :on-click
              (fn [e]
@@ -206,7 +206,7 @@
                             (reset! flag false)
                             (update-player-info)
                             (swap! app-state update-in [:player-data (@app-state :player-to-move) :number-of-moves] inc)
-                            (swap! app-state assoc-in [:player-to-move] (next-player current-players (@app-state :player-to-move))))))) 
+                            (swap! app-state assoc-in [:player-to-move] (next-player @current-players (@app-state :player-to-move))))))) 
                 200)
 
 (reagent/render-component [chain-reaction]
