@@ -9,10 +9,20 @@
 
 (def N (atom 0))
 
+(def player-number (atom 0))
+
+(defn players-in-game [player-number]
+  (loop [c 1 player-vec []]
+    (if (> c player-number)
+        player-vec
+        (recur (+ c 1) (conj player-vec (str "P" c))))))
+
 (def flag (atom false))
 
 (defn new-board [m n]
     (vec (repeat m (vec (repeat n {:player "B" :number 0})))))
+
+(def all-colours '("Red" "Green" "Blue" "Orange" "Violet" "White" "Brown" "Yelllow"))
 
 (def player-color {"X" "Red" "Y" "Green" "B" "Black"})
 
@@ -165,9 +175,10 @@
 (defn start-game-handler []
   (let [rows (js/parseInt (str/trim (.-value (.getElementById js/document "rows"))))
         columns (js/parseInt (str/trim (.-value (.getElementById js/document "columns"))))
-        players (js/parseInt (str/trim (.-value (.getElementById js/document "players"))))]
+        players-no (js/parseInt (str/trim (.-value (.getElementById js/document "players"))))]
         (reset! M rows)
         (reset! N columns)
+        (reset! player-number players-no)
         (reset-app-state)
         (set! (.-display (.-style (.getElementById js/document "start-game-container"))) "none")
         (.play (.getElementById js/document "audio"))))
