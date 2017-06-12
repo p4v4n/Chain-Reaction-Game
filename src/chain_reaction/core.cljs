@@ -17,43 +17,51 @@
         player-vec
         (recur (+ c 1) (conj player-vec (str "P" c))))))
 
+(defn next-player [some-vec curr-player]
+  (let [curr-index (.indexOf some-vec curr-player)]
+     (if (= curr-index (- (count some-vec) 1))
+         (some-vec 0)
+         (some-vec (+ 1 curr-index)))))
+
 (def flag (atom false))
 
 (defn new-board [m n]
     (vec (repeat m (vec (repeat n {:player "B" :number 0})))))
 
+(def current-players (atom []))
+
 (def all-colours '("Red" "Green" "Blue" "Orange" "Violet" "White" "Brown" "Yelllow"))
 
-(def player-color {"X" "Red" "Y" "Green" "B" "Black"})
+(def player-color (atom {"B" "Black"}))
 
 (def app-state (atom {:text "Welcome to Chain Reaction Game"
                       :board (new-board @M @N)
                       :game-status :in-progress
-                      :player-to-move "X"
-                      :player-data {"X" {:number-of-moves 0, :number-of-boxes 0, :sum-of-boxes 0},
-                                    "Y" {:number-of-moves 0, :number-of-boxes 0, :sum-of-boxes 0}}}))
+                      :player-to-move "P1"
+                      :player-data {"P1" {:number-of-moves 0, :number-of-boxes 0, :sum-of-boxes 0},
+                                    "P2" {:number-of-moves 0, :number-of-boxes 0, :sum-of-boxes 0}}}))
 
 (defn reset-app-state []
     (reset! app-state {:text "Welcome to Chain Reaction Game"
                        :board (new-board @M @N)
                        :game-status :in-progress
-                       :player-to-move "X"
-                       :player-data {"X" {:number-of-moves 0, :number-of-boxes 0, :sum-of-boxes 0},
-                                     "Y" {:number-of-moves 0, :number-of-boxes 0, :sum-of-boxes 0}}}))
+                       :player-to-move "P1"
+                       :player-data {"P1" {:number-of-moves 0, :number-of-boxes 0, :sum-of-boxes 0},
+                                     "P2" {:number-of-moves 0, :number-of-boxes 0, :sum-of-boxes 0}}}))
 
 (defn update-player-info []
     (let [flattened-board (flatten (@app-state :board))
-          box-count-x (count (filter #(= "X" (% :player)) flattened-board))
-          box-count-y (count (filter #(= "Y" (% :player)) flattened-board))
-          score-x (reduce + (map #(% :number) (filter #(= "X" (% :player)) flattened-board)))
-          score-y (reduce + (map #(% :number) (filter #(= "Y" (% :player)) flattened-board)))]
-    (swap! app-state assoc-in [:player-data "X" :number-of-boxes] box-count-x)
-    (swap! app-state assoc-in [:player-data "Y" :number-of-boxes] box-count-y)
-    (swap! app-state assoc-in [:player-data "X" :sum-of-boxes] score-x)
-    (swap! app-state assoc-in [:player-data "Y" :sum-of-boxes] score-y)))
+          box-count-p1 (count (filter #(= "P1" (% :player)) flattened-board))
+          box-count-p2 (count (filter #(= "P2" (% :player)) flattened-board))
+          score-p1 (reduce + (map #(% :number) (filter #(= "P1" (% :player)) flattened-board)))
+          score-p2 (reduce + (map #(% :number) (filter #(= "P2" (% :player)) flattened-board)))]
+    (swap! app-state assoc-in [:player-data "P1" :number-of-boxes] box-count-p1)
+    (swap! app-state assoc-in [:player-data "P2" :number-of-boxes] box-count-p2)
+    (swap! app-state assoc-in [:player-data "P1" :sum-of-boxes] score-p1)
+    (swap! app-state assoc-in [:player-data "P2" :sum-of-boxes] score-p2)))
 
 (defn win? []
-    (let [opponent-data ((@app-state :player-data) ({"X" "Y", "Y" "X"} (@app-state :player-to-move)))]
+    (let [opponent-data ((@app-state :player-data) (next-player current-players (@app-state :player-to-move)))]
         (if (and (> (opponent-data :number-of-moves) 0) (= (opponent-data :number-of-boxes) 0))
             (swap! app-state assoc-in [:game-status] (str (@app-state :player-to-move) "-won")))))
 
@@ -162,15 +170,15 @@
             [:td "Score"]]]
     [:tbody
         [:tr {:style {:background-color "Red"}}
-            [:td "X"]
-            [:td (get-in @app-state [:player-data "X" :number-of-moves])]
-            [:td (get-in @app-state [:player-data "X" :number-of-boxes])]
-            [:td (get-in @app-state [:player-data "X" :sum-of-boxes])]]
+            [:td "P1"]
+            [:td (get-in @app-state [:player-data "P1" :number-of-moves])]
+            [:td (get-in @app-state [:player-data "P1" :number-of-boxes])]
+            [:td (get-in @app-state [:player-data "P1" :sum-of-boxes])]]
         [:tr {:style {:background-color "Green"}}
-            [:td "Y"]
-            [:td (get-in @app-state [:player-data "Y" :number-of-moves])]
-            [:td (get-in @app-state [:player-data "Y" :number-of-boxes])]
-            [:td (get-in @app-state [:player-data "Y" :sum-of-boxes])]]]]])
+            [:td "P2"]
+            [:td (get-in @app-state [:player-data "P2" :number-of-moves])]
+            [:td (get-in @app-state [:player-data "P2" :number-of-boxes])]
+            [:td (get-in @app-state [:player-data "P2" :sum-of-boxes])]]]]])
 
 (defn start-game-handler []
   (let [rows (js/parseInt (str/trim (.-value (.getElementById js/document "rows"))))
@@ -179,6 +187,8 @@
         (reset! M rows)
         (reset! N columns)
         (reset! player-number players-no)
+        (reset! current-players (players-in-game players-no))
+        (swap! player-color merge (zipmap (players-in-game players-no) (take players-no all-colours)))
         (reset-app-state)
         (set! (.-display (.-style (.getElementById js/document "start-game-container"))) "none")
         (.play (.getElementById js/document "audio"))))
@@ -196,7 +206,7 @@
                             (reset! flag false)
                             (update-player-info)
                             (swap! app-state update-in [:player-data (@app-state :player-to-move) :number-of-moves] inc)
-                            (swap! app-state assoc-in [:player-to-move] ({"X" "Y", "Y" "X"} (@app-state :player-to-move))))))) 
+                            (swap! app-state assoc-in [:player-to-move] (next-player current-players (@app-state :player-to-move))))))) 
                 200)
 
 (reagent/render-component [chain-reaction]
