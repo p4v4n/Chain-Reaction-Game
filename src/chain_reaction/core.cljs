@@ -30,40 +30,52 @@
 
 (def current-players (atom []))
 
-(def all-colours '("Red" "Green" "Blue" "Orange" "Violet" "White" "Brown" "Yelllow"))
+(def all-colours '("Red" "Green" "Blue" "Orange" "Violet" "White" "Brown" "Pink"))
 
 (def player-color (atom {"B" "Black"}))
+
+(defn player-data-dict []
+   (loop [pl-li @current-players pl-dict {}]
+     (if (empty? pl-li)
+          pl-dict
+          (recur (rest pl-li) (assoc pl-dict (first pl-li) 
+                                          {:number-of-moves 0, :number-of-boxes 0, :sum-of-boxes 0})))))
 
 (def app-state (atom {:text "Welcome to Chain Reaction Game"
                       :board (new-board @M @N)
                       :game-status :in-progress
                       :player-to-move "P1"
-                      :player-data {"P1" {:number-of-moves 0, :number-of-boxes 0, :sum-of-boxes 0},
-                                    "P2" {:number-of-moves 0, :number-of-boxes 0, :sum-of-boxes 0}}}))
+                      :player-data (player-data-dict)}))
 
 (defn reset-app-state []
+    (reset! current-players (players-in-game @player-number))
     (reset! app-state {:text "Welcome to Chain Reaction Game"
                        :board (new-board @M @N)
                        :game-status :in-progress
                        :player-to-move "P1"
-                       :player-data {"P1" {:number-of-moves 0, :number-of-boxes 0, :sum-of-boxes 0},
-                                     "P2" {:number-of-moves 0, :number-of-boxes 0, :sum-of-boxes 0}}}))
+                       :player-data (player-data-dict)}))
 
-(defn update-player-info []
+(defn update-player-info [player-id]
     (let [flattened-board (flatten (@app-state :board))
-          box-count-p1 (count (filter #(= "P1" (% :player)) flattened-board))
-          box-count-p2 (count (filter #(= "P2" (% :player)) flattened-board))
-          score-p1 (reduce + (map #(% :number) (filter #(= "P1" (% :player)) flattened-board)))
-          score-p2 (reduce + (map #(% :number) (filter #(= "P2" (% :player)) flattened-board)))]
-    (swap! app-state assoc-in [:player-data "P1" :number-of-boxes] box-count-p1)
-    (swap! app-state assoc-in [:player-data "P2" :number-of-boxes] box-count-p2)
-    (swap! app-state assoc-in [:player-data "P1" :sum-of-boxes] score-p1)
-    (swap! app-state assoc-in [:player-data "P2" :sum-of-boxes] score-p2)))
+          box-count-pl (count (filter #(= player-id (% :player)) flattened-board))
+          score-pl (reduce + (map #(% :number) (filter #(= player-id (% :player)) flattened-board)))]
+    (swap! app-state assoc-in [:player-data player-id :number-of-boxes] box-count-pl)
+    (swap! app-state assoc-in [:player-data player-id :sum-of-boxes] score-pl)))
+
+(defn update-all-player-info []
+  (doall (map update-player-info @current-players)))
 
 (defn win? []
-    (let [opponent-data ((@app-state :player-data) (next-player @current-players (@app-state :player-to-move)))]
-        (if (and (> (opponent-data :number-of-moves) 0) (= (opponent-data :number-of-boxes) 0))
-            (swap! app-state assoc-in [:game-status] (str (@app-state :player-to-move) "-won")))))
+  (if (= 1 (count @current-players))
+      (swap! app-state assoc-in [:game-status] (str (first @current-players) "-won"))))
+
+(defn eliminate? [player-id]
+    (let [player-info ((@app-state :player-data) player-id)]
+        (if (and (> (player-info :number-of-moves) 0) (= (player-info :number-of-boxes) 0))
+            (reset! current-players (vec (remove #{player-id} @current-players))))))
+
+(defn any-eliminations? []
+  (doall (map eliminate? @current-players)))
 
 (defn max-value [i j]
     (- 3 (count (filter zero? [i j (- (- @M 1) i) (- (- @N 1) j)]))))
@@ -144,8 +156,7 @@
    [:h4
    (case (get-in @app-state [:game-status])
             :in-progress "Game in progress "
-            "P1-won" "P1-won "
-            "P2-won" "P2-won ")
+            (get-in @app-state [:game-status]))
    [:button {:id "restart-game-button"
              :on-click
              (fn [e]
@@ -200,11 +211,12 @@
                       (if (and (= :in-progress (@app-state :game-status)) (> (count (ready-to-split)) 0))
                           (do
                             (overall-split-update (ready-to-split))
-                            (update-player-info)            
+                            (update-all-player-info)
+                            (any-eliminations?)            
                             (win?))
                           (do
                             (reset! flag false)
-                            (update-player-info)
+                            (update-all-player-info)
                             (swap! app-state update-in [:player-data (@app-state :player-to-move) :number-of-moves] inc)
                             (swap! app-state assoc-in [:player-to-move] (next-player @current-players (@app-state :player-to-move))))))) 
                 200)
