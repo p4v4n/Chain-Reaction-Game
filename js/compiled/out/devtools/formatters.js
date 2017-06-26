@@ -224,4 +224,4 @@ return null;
 }
 });
 
-//# sourceMappingURL=formatters.js.map?rel=1498467845721
+//# sourceMappingURL=formatters.js.map?rel=1498468271622

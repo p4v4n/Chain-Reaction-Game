@@ -299,4 +299,4 @@ return clojure.data.atom_diff.call(null,a,b);
 }
 });
 
-//# sourceMappingURL=data.js.map?rel=1498467842795
+//# sourceMappingURL=data.js.map?rel=1498468268632
