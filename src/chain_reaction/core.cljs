@@ -30,7 +30,7 @@
 
 (def current-players (atom []))
 
-(def all-colours '("Red" "Green" "Blue" "Orange" "Violet" "White" "Brown" "Pink"))
+(def all-colours ["Red" "Green" "Blue" "Orange" "Violet" "White" "Brown" "Pink"])
 
 (def player-color (atom {"B" "Black"}))
 
@@ -174,22 +174,18 @@
       [rectangle j i])]
    [:table 
     [:thead 
-        [:tr {:style {:background-color "Indigo" }}
+        [:tr {:style {:background-color (@player-color (@app-state :player-to-move))}}
             [:td "Player-Name"]
             [:td "No. of moves"]
             [:td "No. of boxes"]
             [:td "Score"]]]
-    [:tbody
-        [:tr {:style {:background-color "Red"}}
-            [:td "P1"]
-            [:td (get-in @app-state [:player-data "P1" :number-of-moves])]
-            [:td (get-in @app-state [:player-data "P1" :number-of-boxes])]
-            [:td (get-in @app-state [:player-data "P1" :sum-of-boxes])]]
-        [:tr {:style {:background-color "Green"}}
-            [:td "P2"]
-            [:td (get-in @app-state [:player-data "P2" :number-of-moves])]
-            [:td (get-in @app-state [:player-data "P2" :number-of-boxes])]
-            [:td (get-in @app-state [:player-data "P2" :sum-of-boxes])]]]]])
+    [:tbody {:id "info-body"}
+           (doall (for [i (range @player-number)]
+      [:tr {:style {:background-color (all-colours i)}}
+            [:td (str "P" (inc i))]
+            [:td (get-in @app-state [:player-data (str "P" (inc i)) :number-of-moves])]
+            [:td (get-in @app-state [:player-data (str "P" (inc i)) :number-of-boxes])]
+            [:td (get-in @app-state [:player-data (str "P" (inc i)) :sum-of-boxes])]]))]]])
 
 (defn start-game-handler []
   (let [rows (js/parseInt (str/trim (.-value (.getElementById js/document "rows"))))
