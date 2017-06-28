@@ -4,7 +4,7 @@
 
 ## Overview
 
-A 2-player implementation of the chain-reaction game.
+A ~~2-player~~ multi-player implementation of the chain-reaction game.
 
 Read the rules of the game [here](https://brilliant.org/wiki/chain-reaction-game/).
 
